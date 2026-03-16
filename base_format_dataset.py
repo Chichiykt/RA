@@ -9,10 +9,10 @@ class BinaryQADataset(Dataset):
     def __init__(self, dataset_path, tokenizer, max_length=512, is_train=True):
         """
         Args:
-            dataset_path: 包含训练数据的JSON文件路径
+            dataset_path: The path to the JSON file containing the training data
             tokenizer: Transformers tokenizer
-            max_length: 最大序列长度
-            is_train: 是否为训练模式（训练时生成正负样本，测试时只编码）
+            max_length: Maximum sequence length
+            is_train: Is this training mode (where positive and negative samples are generated during training, and only encoding is performed during testing)?
         """
         datas = []
         for path in dataset_path:
@@ -23,7 +23,7 @@ class BinaryQADataset(Dataset):
         self.max_length = max_length
         self.is_train = is_train
 
-        # 预处理数据：为训练创建(question, passage, label)样本
+        # Pre-process the data: create (question, passage, label) samples for training
         self.processed_data = self._preprocess_data()
 
         self.tokenizer.padding_side = 'right'
@@ -43,14 +43,14 @@ class BinaryQADataset(Dataset):
             correct_context = item["context"]['correct_context']
             incorrect_context = item["context"]['incorrect_context']
 
-            # 添加正样本
+            # Add a positive sample
             processed.append({
                 'question': question,
                 'context': correct_context,
                 'label': 1
             })
 
-            # 添加负样本
+            # Add negative samples
             processed.append({
                 'question': question,
                 'context': incorrect_context,
@@ -114,7 +114,7 @@ class BinaryQADataset(Dataset):
             return_tensors='pt'
         )
 
-        # 移除batch维度（因为每个样本单独处理）
+        # Remove the batch dimension (as each sample is processed individually)
         input_ids = encoding['input_ids'].squeeze(0)
         attention_mask = encoding['attention_mask'].squeeze(0)
 
@@ -131,34 +131,3 @@ class BinaryQADataset(Dataset):
         }
 
 
-""""
-可用参考文档数：3
-可用参考文档数：26
-可用参考文档数：10
-可用参考文档数：34
-可用参考文档数：21
-可用参考文档数：18
-可用参考文档数：15
-可用参考文档数：18
-可用参考文档数：26
-可用参考文档数：14
-可用参考文档数：11
-可用参考文档数：17
-可用参考文档数：25
-可用参考文档数：7
-可用参考文档数：22
-可用参考文档数：7
-可用参考文档数：7
-可用参考文档数：9
-可用参考文档数：18
-可用参考文档数：12
-可用参考文档数：21
-可用参考文档数：21
-可用参考文档数：28
-可用参考文档数：20
-可用参考文档数：14
-可用参考文档数：21
-可用参考文档数：7
-可用参考文档数：14
-可用参考文档数：12
-"""
