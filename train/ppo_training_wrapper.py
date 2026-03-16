@@ -11,7 +11,7 @@ class PPOTrainingWrapper:
         self.env = env
         self.batch_size = batch_size
         self.split_tokens = split_tokens
-        # PPO配置
+        # PPO deployment
         self.ppo_config = PPOConfig(
             model_name="",
             learning_rate=learning_rate,
@@ -39,13 +39,13 @@ class PPOTrainingWrapper:
         self.ppo_trainer = PPOTrainer(
             config=self.ppo_config,
             model=generator.model,
-            ref_model=None,  # 使用原始模型作为参考
+            ref_model=None,  # Use the original model as a reference
             tokenizer=tokenizer,
 
         )
 
     def train_episode(self, training_data: list[dict], epoch:int):
-        """训练一个epoch"""
+        """Train for one epoch"""
         infos = {
                 "rewards":0,
                 "positive_count":0,
@@ -78,10 +78,10 @@ class PPOTrainingWrapper:
                 answer_str = self.ppo_trainer.tokenizer.decode(response[0], skip_special_tokens=True).split(self.split_tokens[0])[-1].strip().split(self.split_tokens[1])[-1].strip()
                 answers.append((answer_str, inputs_tensor, response[0]))
 
-            # 计算奖励
+            # Calculate rewards
             #     answerable = self.env.check_answerable(question, reference_texts)
                 answerable = correct_reference in reference_texts
-                print(question,"可回答" if answerable else "不可回答")
+                print(question,"Can be answered" if answerable else "Do not answer")
                 rewards.append(torch.FloatTensor(torch.tensor(self.env.calculate_reward(
                     answerable,
                     self.env.check_answer_correctness(answer_str, correct_reference, answerable, target_answer_words),
@@ -105,7 +105,7 @@ class PPOTrainingWrapper:
             print("-" * 50)
             infos["rewards"] += np.sum(rewards)
             infos["positive_count"] += len(list(filter(lambda x: x > 0, rewards)))
-            print("统计信息：", self.env.generate_info)
+            print("Statistical information：", self.env.generate_info)
 
             infos["generation_infos"].append({f"episode_{epoch}_{i + 1}": self.env.generate_info.copy()})
             self.env.generate_info_init()
