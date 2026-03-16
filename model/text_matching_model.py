@@ -5,7 +5,7 @@ from clean_model import CleanModel
 import os
 
 class TextMatchingModel:
-    """文本匹配模型，判断问题是否可回答"""
+    """Text matching model to determine whether a question can be answered"""
 
     def __init__(self, base_model_path, model_dict_path, matching_tokenizer_path,context_clean_model: CleanModel, lora_weight_path, device_index):
         self.context_cleaner = context_clean_model
@@ -19,7 +19,7 @@ class TextMatchingModel:
             self.tokenizer.pad_token_type_id = self.tokenizer.eos_token_id
 
 
-        # 加载基础模型
+        # Load base model
         model = AutoModelForSequenceClassification.from_pretrained(
             base_model_path,
             num_labels=2,
@@ -32,7 +32,7 @@ class TextMatchingModel:
         self.model.config.pad_token_id = self.tokenizer.pad_token_id
 
         self.model.eval()
-        print("模型加载完成")
+        print("The model has finished loading")
 
     def predict(self, question: str, reference_text: str):
         cleaned_ref_text = self.context_cleaner.clean_context(reference_text)
