@@ -16,7 +16,7 @@ class PPOTrainingWrapper:
         self.env = env
         self.batch_size = batch_size
 
-        # PPO配置
+        # PPO deployment
         self.ppo_config = PPOConfig(
             model_name="RL_deepseek-r1-7b",
             learning_rate=learning_rate,
@@ -39,29 +39,29 @@ class PPOTrainingWrapper:
 
         )
         # logger.info("ppozhhdia1", next(env.generator.model.parameters()).device)
-        # 初始化PPOTrainer
+        # Initialise PPOTrainer
         self.ppo_trainer = PPOTrainer(
             config=self.ppo_config,
 
             model=env.generator.model,
-            ref_model=None,  # 使用原始模型作为参考
+            ref_model=None, 
             tokenizer=env.generator.tokenizer,
             # d={}
         )
 
         # logger.info("ppozhhdia2",next(env.generator.model.parameters()).device)
     def train_episode(self, training_data: List[Dict], episode:int):
-        """训练一个周期"""
+        """One training cycle"""
         all_stats = []
         infos = {
                 "rewards":0
             }
 
-        # 分批处理训练数据
+        # Process the training data in batches
         for i in range(0, len(training_data), self.batch_size):
             batch_data = training_data[i:i + self.batch_size]
 
-            # 准备输入数据
+            # Prepare to enter data
             prompts = [data["prompt"] for data in batch_data]
             questions = [data["question"] for data in batch_data]
             reference_texts_list = [data["reference_texts"] for data in batch_data]
@@ -97,11 +97,11 @@ class PPOTrainingWrapper:
                 response_tensors.append(response[0])
                 attention_masks.append(attention_mask)
                 answer_str = self.env.generator.tokenizer.decode(response[0], skip_special_tokens=True).split("</think>")[-1].strip()
-                # print("模型回复：-------" + answer_str)
+                # print("Model response：-------" + answer_str)
 
                 answers.append((answer_str, inputs_tensor, response[0]))
 
-            # 计算奖励
+            # Calculate rewards
                 answerable = self.env.check_answerable(question, reference_texts)
                 rewards.append(torch.FloatTensor(torch.tensor(self.env.calculate_reward(
                     answerable,
@@ -110,7 +110,7 @@ class PPOTrainingWrapper:
                     episode
                 ))))
 
-            # PPO训练
+            # PPO training
             stats = self.ppo_trainer.step(
                 queries=query_tensors,
                 responses=response_tensors,
@@ -121,7 +121,7 @@ class PPOTrainingWrapper:
 
             all_stats.append(stats)
 
-            # 打印进度
+            # Print progress
             print(f"Batch {i // self.batch_size + 1}/{(len(training_data) - 1) // self.batch_size + 1}")
             print(f"Average reward: {np.mean(rewards):.4f}")
             for j, (question, answer, reward) in enumerate(zip(questions, answers, rewards)):
@@ -144,7 +144,7 @@ def main():
     save_path = os.path.join(current_dir, "save_model")
     sing_count = 64
 
-    # 初始化组件
+    # Initialise the component
     generator = GeneratorModel(generator_path)
     env = ReinforcementLearningEnvironment(
         generator=generator,
@@ -153,7 +153,7 @@ def main():
         nli_model_path=nli_model_path
     )
 
-    # 初始化PPO训练器
+    # Initialise the PPO trainer
     ppo_wrapper = PPOTrainingWrapper(env)
 
     multi_context_dataset = MultiContextDataset(dataset_path=dataset_path, count=50, tokenizer=None)
@@ -161,14 +161,14 @@ def main():
     best_avg_reward = 0
     rewards = 0
     generation_infos = []
-    for i in range(20): # 在数据集上学习
-        # 开始训练
+    for i in range(20): # Training on the dataset
+        # Start training
 
-        for episode in range(15):  # 单个数据集
+        for episode in range(15):  # A single dataset
 
-            print(f"开始第 {episode + 1} 周期训练")
+            print(f"Start training cycle {episode + 1}")
             stats, infos = ppo_wrapper.train_episode(multi_context_dataset.data_all[episode * sing_count : (episode + 1) * sing_count], i)
-            print(f"第 {episode + 1} 周期训练完成，平均奖励: {infos['rewards'] / sing_count}")
+            print(f"Episode {episode + 1} of training completed. Average reward: {infos['rewards'] / sing_count}")
             rewards += infos['rewards']
             generation_infos.append({f"episode_{i+1}_{episode+1}": env.generate_info.copy()})
             print(f"episode_{i+1}_{episode+1}----------------------", env.generate_info.copy())
@@ -181,19 +181,19 @@ def main():
         if i == 0:
             ppo_wrapper.ppo_trainer.save_pretrained(save_directory=save_path)
             best_avg_reward = rewards / 15
-            print(f"首轮平均奖励{best_avg_reward}")
+            print(f"Average reward for the first round {best_avg_reward}")
             rewards = 0
         else:
             avg_reward = rewards / 15
-            print(f"第{i+1}轮平均奖励{avg_reward}")
+            print(f"Average reward for round {i+1}: {avg_reward}")
             if avg_reward > best_avg_reward:
                 best_avg_reward = avg_reward
-                print(f"保存到best_model")
+                print(f"Save to best_model")
                 ppo_wrapper.ppo_trainer.save_pretrained(save_directory=save_path)
             else:
-                print(f"保存到epoch{i+1}_model")
+                print(f"Save to epoch{i+1}_model")
                 ppo_wrapper.ppo_trainer.save_pretrained(save_directory=f"{save_path}/epoch{i+1}_model")
-        print("训练完毕")
+        print("Training complete")
 
         print(f"best_avg_reward: {best_avg_reward}")
 
