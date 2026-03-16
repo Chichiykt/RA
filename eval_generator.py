@@ -13,28 +13,28 @@ from model.text_matching_model import TextMatchingModel
 class TopNFloats:
     def __init__(self, n):
         self.n = n
-        self.heap = []  # 最小堆，保存最大的N个数
+        self.heap = []  
 
     def add(self, text, prob):
         if len(self.heap) < self.n:
             heapq.heappush(self.heap, (text, prob))
         else:
-            if prob > self.heap[0][1]:  # 如果比堆顶大
+            if prob > self.heap[0][1]: 
                 heapq.heapreplace(self.heap, (text, prob))
 
     def get_top_n(self):
-        # 返回排序后的前N个（从大到小）
+
         return [i[0] for i in sorted(self.heap, reverse=True)]
 
 
 class Generator:
     def __init__(self, generator_path: str):
         self.device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
-        # 加载模型和分词器
+
         self.model = AutoModelForCausalLM.from_pretrained(generator_path)
         self.tokenizer = AutoTokenizer.from_pretrained(generator_path, device_map={"":"cuda:2"})
         self.model.to(device=self.device)
-        print("生成器模型加载成功！")
+        print("The generative model has loaded successfully!")
 
     def generate(self, question, reference_list):
         prompt = [
@@ -172,15 +172,15 @@ if __name__ == '__main__':
             for references in data['ctxs']:
                 reference = references["text"]
                 a, b = matching_model.predict(question, reference)
-                # print("问题:", question, "prob", b, "参考文档：", reference, "答案：", answer, sep='\n', end='\n')
+                # print("Question:", question, "prob", b, "Reference documents：", reference, "Answer：", answer, sep='\n', end='\n')
                 top_n.add(reference, b)
             data_case['contexts'] = top_n.get_top_n()
 
             generator_answer = generator.generate(question=question, reference_list=data_case['contexts'])
-            print("模型回复:", generator_answer)
+            print("Model response:", generator_answer)
             result, probs = check_idk = nli_model.check_IDK(generator_answer)
             if result == "entailment":
-                print(f"(我不知道)问题：{question}", f"答案：{answer}", f"模型回复：{generator_answer}" ,"==="*20,sep='\n', end='\n')
+                print(f"(I don’t know) the issue：{question}", f"Answer：{answer}", f"Model response:{generator_answer}" ,"==="*20,sep='\n', end='\n')
                 continue
 
             answer_str = data_case['answer'][0]
@@ -194,9 +194,9 @@ if __name__ == '__main__':
                     if ans not in generator_answer:
                         continue
                 right_count += 1
-                print(f"(正确回答)问题：{question}" , f"答案：{answer}" , f"模型回复：{generator_answer}", sep='\n', end='\n')
+                print(f"(Correct answer) Question：{question}" , f"Answer：{answer}" , f"Model response：{generator_answer}", sep='\n', end='\n')
             else:
-                print(f"问题：{question}", f"答案：{answer}", f"模型回复：{generator_answer}", "="*20, sep='\n', end='\n')
+                print(f"Question：{question}", f"Answer：{answer}", f"Model response：{generator_answer}", "="*20, sep='\n', end='\n')
 
             datas.append(data_case)
             json.dump(datas, f, ensure_ascii=True, indent=4)
