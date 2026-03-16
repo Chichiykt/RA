@@ -14,7 +14,7 @@ class CleanModel:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        print(f"clean_model在{self.model.device}上加载完毕")
+        print(f"clean_model has finished loading on {self.model.device}")
     def clean_context(self, context):
         clean_template = [
             {"role": "user", "content": f"""
