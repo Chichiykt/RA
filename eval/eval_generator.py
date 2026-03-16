@@ -23,7 +23,7 @@ def main(args: argparse.Namespace):
     for epoch in range(args.num_epochs):
         for singe_data in dataset.data_all:
             answerable = singe_data["correct_context"] in singe_data["contexts"]
-            print(singe_data["question"],"可回答" if answerable else "不可回答")
+            print(singe_data["question"],"Can answer" if answerable else "Do not answer")
             answer = generator.generate(question=singe_data["question"], reference_list=singe_data["contexts"], split_tokens=args.split_tokens)
             answer_result = reward_calculator.check_answer_correctness(answer=answer, correct_reference=singe_data["correct_context"],
                                                                        answerable=answerable, target_answer_words=singe_data["answer"])
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))[:-5]
     params = argparse.ArgumentParser()
     """
-    文本匹配模型
+    Text matching model
     """
     params.add_argument('--matching_base_path', type=str,
                             help='the path of base model in text matching model',
@@ -52,7 +52,7 @@ if __name__ == '__main__':
                             help='the path of tokenizer in text matching model',
                             default=os.path.join(current_dir, 'text_matching_model/last_model_tokenizer'))
     """
-    数据集
+    Dataset
     """
     params.add_argument('--dataset_path', type=str,
                         help="the path of dataset",
@@ -64,19 +64,19 @@ if __name__ == '__main__':
                         help="the probability of what question contains right context in all question",
                         default=0.8)
     """
-    clean模型（开源模型即可）
+    clean model (an open-source model will suffice)
     """
     params.add_argument('--clean_model_path', type=str,
                             help='the path of clean model',
                             default=os.path.join(current_dir, 'llama3.2_3b_instruct'))
     """
-    NLI模型（开源模型即可）
+    NLI model (an open-source model will suffice)
     """
     params.add_argument('--NLI_model_path', type=str,
                             help='the path of NLI model',
                             default=os.path.join(current_dir, 'tasksource_deberta_small_long_nli'))
     """·
-    生成器模型
+    Generative models
     """
     params.add_argument('--generator_path', type=str,
                         help='the path of generator, pretrain model or fine-turned model.',
@@ -89,7 +89,7 @@ if __name__ == '__main__':
                         help='the split_tokens, when use thinking model or need instruction answer.',
                         default=["</think>","<Answer>:"])
     """
-    GPU分配
+    GPU allocation
     """
     params.add_argument('--matching_gpu_idx', type=int, default=2)
     params.add_argument('--clean_gpu_idx', type=int, default=5)
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     params.add_argument('--generator_gpu_idx', type=int, default=6)
 
     """
-    评估轮次
+    Evaluation round
     """
     params.add_argument('--num_epochs', type=int, default=3)
 
