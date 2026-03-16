@@ -2,7 +2,7 @@
 code for paper [RA: Combating Hallucinations in RAG-Based LLMs by Reinforcing Attention on Critical Texts]
 
 requires:
-  python>=3.10.0\\
+  python>=3.10.0\n
   datasets>=2.18.0
   numpy>=1.26.4
   pandas>=2.3.3
