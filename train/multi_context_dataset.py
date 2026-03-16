@@ -9,15 +9,15 @@ class MultiContextDataset(Dataset):
     def __init__(self, dataset_path: str, count: int,  tokenizer , correct_probability=0.9, max_length=512):
         """
         Args:
-            dataset_path: 包含训练数据的JSON文件路径
-            count: 每个问题对应的样本数量
-            has_correct: 是否包含正确参考文档 true ：是
+            dataset_path: The path to the JSON file containing the training data
+            count: The number of samples for each question
+            has_correct: Does it contain the correct reference document? true: Yes
         """
         with open(dataset_path, 'r', encoding='utf-8') as f:
             self.raw_data = json.load(f)
         self.count = count
         self.correct_probability = correct_probability
-        # 预处理数据：为训练创建(question, passage, label)样本
+        # Pre-process the data: create (question, passage, label) samples for training
         self.data_all = self._preprocess_data()
         # self.tokenizer = tokenizer
         # self.max_length = max_length
@@ -32,7 +32,7 @@ class MultiContextDataset(Dataset):
     def random_bool(self, true_probability):
 
         if not 0 <= true_probability <= 1:
-            raise ValueError("概率必须在0到1之间")
+            raise ValueError("The probability must be between 0 and 1")
 
         return random.random() < true_probability
 
@@ -99,9 +99,9 @@ class MultiContextDataset(Dataset):
 
         # messages = [
         #     {"role": "user", "content": ""+
-        #                                 "\n参考文本:\n"+
+        #                                 "\nReference text:\n"+
         #                                 "".join([f"{context}\n" for context in item['contexts']])+
-        #                                 f"\n问题:\n{item['question']}"}
+        #                                 f"\nQuestion:\n{item['question']}"}
         # ]
 
         # logger.info("=" * 30)
@@ -123,7 +123,7 @@ class MultiContextDataset(Dataset):
         #     return_tensors='pt'
         # )
         #
-        # # 移除batch维度（因为每个样本单独处理）
+        # # Remove the batch dimension (as each sample is processed individually)
         # input_ids = encoding['input_ids'].squeeze(0)
         # attention_mask = encoding['attention_mask'].squeeze(0)
         #
