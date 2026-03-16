@@ -30,14 +30,14 @@ def main(args: argparse.Namespace):
                                               generator_gpu_idx=args.generator_gpu_idx)
     positive_count = 0
     for epoch in range(args.num_epochs):
-        print(f"开始第{epoch + 1}轮训练")
+        print(f"Start training round {epoch + 1}")
         infos = ppo_training_wrapper.train_episode(training_data=dataset.data_all, epoch=epoch+1)
-        print(f"第{epoch + 1}轮统计信息: ", infos["generation_infos"])
-        print("总奖励: ", infos["rewards"])
-        print("正奖励次数: ", infos["positive_count"])
+        print(f"Statistics for epoch {epoch + 1}: ", infos["generation_infos"])
+        print("Total prize money: ", infos["rewards"])
+        print("Number of positive rewards: ", infos["positive_count"])
         if infos["positive_count"] >= positive_count:
             save_path = f"{args.save_path}/{str(args.generator_path).split('/')[-1]}/epoch_{epoch+1}"
-            print(f"本次微调之后的正奖励次数{infos['positive_count']}不少于之前次数{positive_count}, 模型保存到：{save_path}")
+            print(f"Following this fine-tuning, the number of positive rewards {infos['positive_count']} is no less than the previous count {positive_count}. The model has been saved to: {save_path}")
             os.makedirs(save_path, exist_ok=True)
             ppo_training_wrapper.ppo_trainer.model.save_pretrained(save_path)
             positive_count = infos["positive_count"]
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))[:-6]
     params = argparse.ArgumentParser()
     """
-    文本匹配模型
+    Text matching model
     """
     params.add_argument('--matching_base_path', type=str,
                         help='the path of base model in text matching model',
@@ -62,7 +62,7 @@ if __name__ == '__main__':
                         help='the path of tokenizer in text matching model',
                         default=os.path.join(current_dir, 'text_matching_model/last_model_tokenizer'))
     """
-    数据集
+    Dataset
     """
     params.add_argument('--dataset_path', type=str,
                         help="the path of dataset",
@@ -74,19 +74,19 @@ if __name__ == '__main__':
                         help="the probability of what question contains right context in all question",
                         default=0.8)
     """
-    clean模型（开源模型即可）
+    clean model (an open-source model will suffice)
     """
     params.add_argument('--clean_model_path', type=str,
                         help='the path of clean model',
                         default=os.path.join(current_dir, 'llama3.2_3b_instruct'))
     """
-    NLI模型（开源模型即可）
+    NLI model (an open-source model will suffice)
     """
     params.add_argument('--NLI_model_path', type=str,
                         help='the path of NLI model',
                         default=os.path.join(current_dir, 'tasksource_deberta_small_long_nli'))
     """
-    生成器模型
+    Generative models
     """
     params.add_argument('--generator_path', type=str,
                         help='the path of generator, pretrain model or fine-turned model.',
@@ -98,7 +98,7 @@ if __name__ == '__main__':
                         help='the split_tokens, when use thinking model or need instruction answer.',
                         default=["</think>", "<Answer>:"])
     """
-    GPU分配
+    GPU allocation
     """
     params.add_argument('--matching_gpu_idx', type=int, default=2)
     params.add_argument('--clean_gpu_idx', type=int, default=4)
@@ -106,14 +106,14 @@ if __name__ == '__main__':
     params.add_argument('--generator_gpu_idx', type=int, default=0)
 
     """
-    训练超参数
+    Training hyperparameters
     """
     params.add_argument('--num_epochs', type=int, default=20)
     params.add_argument('--lr', type=float, default=1e-6)
     params.add_argument('--batch_size', type=int, default=16)
 
     """
-    保存路径
+    Save path
     """
     params.add_argument('--save_path', type=str, default=os.path.join(current_dir, "generator"))
 
