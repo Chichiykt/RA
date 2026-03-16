@@ -14,20 +14,16 @@ requires:
   transformers==4.52.0
   trl==0.8.1
 
-# 所有的主训练程序都包含着复杂的依赖关系，请务必保证所有的依赖版本正确和代码文件完整，否则会引发不可预知的错误。
-我们定义了很多的自定义类，包括自定义的数据集加载类、工具类、粗略的强化学习反馈环境类、各种模型的主类等，他们在整个项目的运行中都相互依赖，
-虽未能体现出高内聚低耦合的特性，但是运行是没有问题的。如果有任何问题请联系我们。下面我们主要介绍两个主要的训练入口。
+# All main training programmes involve complex dependencies; please ensure that all dependencies are of the correct version and that all code files are complete, as failure to do so may result in unforeseen errors.
+We have defined a number of custom classes, including custom dataset loading classes, utility classes, rudimentary reinforcement learning feedback environment classes, and base classes for various models. These classes are interdependent throughout the project’s operation; whilst they do not fully embody the principles of high cohesion and low coupling, they function without issue. Please contact us should you encounter any problems. Below, we will outline the two main training entry points.
 
+When you wish to train a text-matching model or any tool model from scratch, please refer to the implementation in ft_text_matching.py. Before doing so, ensure that the tRL and Transformers dependencies are properly configured. When loading the base model, you can adapt it to your task type by modifying the `num_labels` and `problem_type` parameters. Adjust the LORA configuration options as required. The base model path, custom dataset class and custom dataset path can all be modified within the code. You can then use it directly. 
+## python ft_text_matching.py
+Run the code. You can also modify the code logic to suit your needs.
+## ft_text_matching.py：Specify a base model and use LORA technology to perform efficient fine-tuning of text-matching models.
 
-当你想要从0开始训练文本匹配模型或者任何工具模型的时候，请参考ft_text_matching.py的实现。在此之前务必配置好trl和transformers依赖。在加载基座模型的时候，
-可以通过更改num_lables参数和problem_type参数来适配你的任务类型。lora配置项中根据你的需要进行更改。基座模型路径、自定义数据集类、自定义数据集路径都在代码中更改。
-随后直接使用 
-##python ft_text_matching.py
-运行代码。你也可以根据你的需要更改代码逻辑。
-##ft_text_matching.py：指定基座模型，使用lora技术进行参数高效微调文本匹配模型。
+If you wish to reproduce the training of the generator model using the PPO algorithm and our method, please refer to `train_generator.py`. We have encapsulated all the hyperparameters, so you can simply modify them to suit your task.
+train_generator.py: Train the generative model
 
-当你想要复现使用PPO算法和我们的方法训练生成器模型，请关注train_generator.py，我们已经将所有的超参数封装好，你可以直接修改以适配你的任务。
-train_generator.py: 进行生成器模型的训练
-
-# 我们自定义的数据集体现在dataset文件夹中，一共包含三个数据集。
-文章中使用的其他数据集请参照文章表述，这里我们只公布我们自主创建的数据集。
+# Our custom data is stored in the ‘dataset’ folder, which contains a total of three datasets.
+For other datasets used in the paper, please refer to the text; here we are only publishing the datasets we have created ourselves.
