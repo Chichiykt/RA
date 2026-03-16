@@ -15,17 +15,16 @@ matching_model = TextMatchingModel(matching_model_path, lora_weights_path=lora_w
 class TopNFloats:
     def __init__(self, n):
         self.n = n
-        self.heap = []  # 最小堆，保存最大的N个数
+        self.heap = []  
 
     def add(self, text, prob):
         if len(self.heap) < self.n:
             heapq.heappush(self.heap, (text, prob))
         else:
-            if prob > self.heap[0][1]:  # 如果比堆顶大
+            if prob > self.heap[0][1]:  
                 heapq.heapreplace(self.heap, (text, prob))
 
     def get_top_n(self):
-        # 返回排序后的前N个（从大到小）
         return [i[0] for i in sorted(self.heap, reverse=True)]
 
 top_n = TopNFloats(20)
@@ -51,7 +50,7 @@ with open(save_path, 'w', encoding='utf-8') as f:
         for references in data['ctxs']:
             reference = references["text"]
             a, b = matching_model.predict(question, reference)
-            # print("问题:", question, "prob", b, "参考文档：", reference, "答案：", answer, sep='\n', end='\n')
+            # print("Question:", question, "prob", b, "Reference documents:", reference, "Answer：", answer, sep='\n', end='\n')
             top_n.add(reference, b)
         data_case['contexts'] = top_n.get_top_n()
         datas.append(data_case)
