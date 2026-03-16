@@ -3,33 +3,32 @@ import json
 import random
 
 """
-保留前N个分数最高的相关文档
+Retain the top N documents with the highest scores
 """
 class TopNFloats:
     def __init__(self, n):
         self.n = n
-        self.heap = []  # 最小堆，保存最大的N个数
+        self.heap = []  
 
     def add(self, text, prob):
         if len(self.heap) < self.n:
             heapq.heappush(self.heap, (text, prob))
         else:
-            if prob > self.heap[0][1]:  # 如果比堆顶大
+            if prob > self.heap[0][1]:  
                 heapq.heapreplace(self.heap, (text, prob))
 
     def get_top_n(self):
-        # 返回排序后的前N个（从大到小）
         return [i[0] for i in sorted(self.heap, reverse=True)]
 
 """
-有多个参考文档的数据集
+There are datasets from multiple reference documents
 """
 class multi_context_dataset:
     def __init__(self, dataset_path:str, context_count: int, correct_probability:float):
         """
         :param dataset_path:
-        :param context_count: 单个问题的参考文本数
-        :param correct_probability: 有正确参考文档的问题的比例
+        :param context_count: Number of reference texts per question
+        :param correct_probability: The proportion of questions with the correct reference documentation
         """
         with open(dataset_path, 'r', encoding='utf-8') as f:
             self.raw_data = json.load(f)
@@ -40,7 +39,7 @@ class multi_context_dataset:
     def random_bool(self, true_probability):
 
         if not 0 <= true_probability <= 1:
-            raise ValueError("概率必须在0到1之间")
+            raise ValueError("The probability must be between 0 and 1")
 
         return random.random() < true_probability
     def _preprocess_data(self, count:int=960) -> list:
