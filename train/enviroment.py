@@ -4,7 +4,7 @@ from model.text_matching_model import TextMatchingModel
 from model.nli_model import NLIModel
 
 class RewardCalculator:
-    """强化学习环境"""
+    """Reinforcement Learning Environment Demo"""
 
     def __init__(self, matching_model: TextMatchingModel, nli_model: NLIModel):
 
@@ -12,52 +12,52 @@ class RewardCalculator:
         self.nli_model = nli_model
 
         self.generate_info = {
-            "A1": 0, # 可回答 + 回答正确 + len < 25
-            "A2": 0, # 可回答 + 回答正确 + len >= 25
-            "B1": 0, # 不可回答 + “我不知道” + len < 25
-            "B2": 0, # 不可回答 + “我不知道” + len > 25
-            "C1": 0, # 不可回答 + “内部知识” + len < 25
-            "C2": 0, # 不可回答 + “内部知识” + len > 25
-            "D1": 0, # 可回答 + "我不知道" + len < 25
-            "D2": 0, # 可回答 + "我不知道" + len > 25
-            "E1": 0, # 可回答 + 回答错误 + len < 25
-            "E2": 0, # 可回答 + 回答错误 + len > 25
-            "F1": 0, # 不可回答 + 回答错误 + len < 25
-            "F2": 0,  # 不可回答 + 回答错误 + len > 25
-            "E": 0, # 重复答案
+            "A1": 0, # Can be answered + Correct answer + len < 25
+            "A2": 0, # Can be answered + Correct answer + len >= 25
+            "B1": 0, # Do not answer + “I don’t know” + len < 25
+            "B2": 0, # Do not answer + “I don’t know” + len > 25
+            "C1": 0, # Do not answer + “internal knowledge” + len < 25
+            "C2": 0, # Do not answer + “internal knowledge” + len > 25
+            "D1": 0, # You can reply with "I don't know" + len < 25
+            "D2": 0, # You can reply with "I don't know" + len > 25
+            "E1": 0, # Can be answered + Incorrect answer + len < 25
+            "E2": 0, # Can be answered + Incorrect answer + len > 25
+            "F1": 0, # Cannot answer + Incorrect answer + len < 25
+            "F2": 0,  # Cannot answer + Incorrect answer + len > 25
+            "E": 0, # Duplicate answer
         }
 
     def generate_info_init(self):
         self.generate_info = {
-            "A1": 0,  # 可回答 + 回答正确 + len < 25
-            "A2": 0,  # 可回答 + 回答正确 + len >= 25
-            "B1": 0,  # 不可回答 + “我不知道” + len < 25
-            "B2": 0,  # 不可回答 + “我不知道” + len > 25
-            "C1": 0,  # 不可回答 + “内部知识” + len < 25
-            "C2": 0,  # 不可回答 + “内部知识” + len > 25
-            "D1": 0,  # 可回答 + "我不知道" + len < 25
-            "D2": 0,  # 可回答 + "我不知道" + len > 25
-            "E1": 0,  # 可回答 + 回答错误 + len < 25
-            "E2": 0,  # 可回答 + 回答错误 + len > 25
-            "F1": 0,  # 不可回答 + 回答错误 + len < 25
-            "F2": 0,  # 不可回答 + 回答错误 + len > 25
-            "E": 0,  # 重复答案
+            "A1": 0, 
+            "A2": 0, 
+            "B1": 0, 
+            "B2": 0,
+            "C1": 0, 
+            "C2": 0,
+            "D1": 0, 
+            "D2": 0, 
+            "E1": 0,
+            "E2": 0,
+            "F1": 0,
+            "F2": 0, 
+            "E": 0,
         }
 
     """
-        根据文本匹配模型判断是否可回答
+        Determine whether a response is possible based on the text-matching model
     """
     def check_answerable(self, question: str, reference_texts: List[str]) -> bool:
-        """检查问题是否可回答"""
+        """Check whether the question can be answered"""
         for ref_text in reference_texts:
             if self.matching_model.predict(question, ref_text):
-                print("问题：",question ,"可回答")
+                print("Question：",question ,"Can be answered")
                 return True
-        print("问题：", question , "不可回答")
+        print("Question：", question , "Cannot be answered")
         return False
 
     """
-        检查回答是否正确（基于文档回答或者回答我不知道）
+        Check whether the answer is correct (based on the documentation, or if the answer is ‘I don’t know’)
     """
     def check_answer_correctness(self, answer: str, correct_reference, answerable, target_answer_words) -> str:
         unknown_template = """An effective response must provide substantive information relevant to the question.
@@ -70,12 +70,12 @@ class RewardCalculator:
 
         key_correct = True
 
-        if answer.count('\n') > 1 or answer.count(" ") > 50: # 重复思考、重复答案
-            print("啰嗦")
+        if answer.count('\n') > 1 or answer.count(" ") > 50: # Repeated thoughts, repeated answers
+            print("token limit")
             return "error"
 
         if "entailment" == self.nli_model.predict(unknown_template, answer)[0]:
-            print(f"--------------------------------------------------判定为“无法回答”")
+            print(f"--------------------------------------------------Classified as 'Unanswerable.'")
             return "unknown"
 
         for key_word in target_answer_words:
@@ -85,28 +85,28 @@ class RewardCalculator:
 
         if "entailment" == self.nli_model.predict(correct_reference, answer)[0]:
             if not answerable and key_correct:
-                print(f"--------------------------------------------------(内部知识)判定为“蕴含关系”, 模型回答正确")
+                print(f"--------------------------------------------------(Internal knowledge) Determined to be an ‘implication’, the model’s answer is correct")
             else:
                 if key_correct:
-                    print(f"--------------------------------------------------判定为“蕴含关系”, 模型回答正确")
+                    print(f"--------------------------------------------------Determined to be an ‘implication’, the model’s answer is correct")
                 else:
-                    print(f"---------------------------------------NLI判断失误")
+                    print(f"---------------------------------------NLI misclassification")
                     return "incorrect"
             return "correct"
         else:
             if not answerable:
-                print(f"--------------------------------------------------(不知哪来的)判定为“回答错误”")
+                print(f"--------------------------------------------------(I don’t know where it came from) marked as ‘incorrect’")
             else:
-                print(f"--------------------------------------------------判定为“回答错误”")
+                print(f"--------------------------------------------------Marked as 'incorrect'")
             return "incorrect"
 
     """
-        可回答+回答正确 = +
-        可回答+回答错误 = -
-        可回答+"无法回答" = -
-        不可回答+"无法回答" = +
-        不可回答+"回答错误" = -
-        不可回答+"回答正确"（内部知识） = +
+        Can be answered + Correct answer = +  
+        Can be answered + Incorrect answer = -  
+        Can be answered + "Cannot answer" = -   
+        Cannot be answered + "Cannot answer" = +     
+        Cannot be answered + "Incorrect answer" = -    
+        Cannot be answered + "Correct answer" (internal knowledge) = +
     """
     def calculate_reward(self, answerable: bool, answer_result: str, answer_len: int, episode:int) -> float:
         if answer_result == "error":
@@ -118,7 +118,7 @@ class RewardCalculator:
                 return -2.0
 
 
-        """计算奖励值"""
+        """Calculate the reward value"""
         if answerable and answer_result == "correct":
             if episode == 0:
                 if answer_len < 25:
