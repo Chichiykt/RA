@@ -13,11 +13,10 @@ from model.text_matching_model import TextMatchingModel
 class Generator:
     def __init__(self, generator_path: str, gpu_idx: int) -> None:
         self.device = torch.device(f"cuda:{gpu_idx}" if torch.cuda.is_available() else "cpu")
-        # 加载模型和分词器
         self.model = AutoModelForCausalLM.from_pretrained(generator_path)
         self.tokenizer = AutoTokenizer.from_pretrained(generator_path, device_map={"":f"cuda:{gpu_idx}"})
         self.model.to(device=self.device)
-        print("生成器模型加载成功！")
+        print("The generative model has loaded successfully!")
 
     def generate(self, question, reference_list):
         prompt = [
@@ -87,21 +86,20 @@ class NliModel:
 class TopNFloats:
     def __init__(self, n):
         self.n = n
-        self.heap = []  # 最小堆，保存最大的N个数
+        self.heap = []  
 
     def add(self, text, prob):
         if len(self.heap) < self.n:
             heapq.heappush(self.heap, (text, prob))
         else:
-            if prob > self.heap[0][1]:  # 如果比堆顶大
+            if prob > self.heap[0][1]:  
                 heapq.heapreplace(self.heap, (text, prob))
 
     def get_top_n(self):
-        # 返回排序后的前N个（从大到小）
         return [i[0] for i in sorted(self.heap, reverse=True)]
 
 def main():
-    #1.数据模型路径
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     origin_data_path = os.path.join(current_dir, "download_nq-open_trivia-qa/open_domain_data/NQ/train.json")
 
@@ -113,13 +111,13 @@ def main():
     matching_tokenizer_path = os.path.join(current_dir, "text_matching_model/last_model_tokenizer")
 
     data_save_path = os.path.join(current_dir, "dataset/nq_open_domain.json")
-    #文本优化模型
+
     clean_model_path = os.path.join(current_dir, "llama3.2_3b_instruct")
 
     nli_model_path = os.path.join(current_dir, "tasksource_deberta_small_long_nli")
 
     nli_model = NliModel(nli_model_path)
-    #2.加载数据模型
+
     with open(origin_data_path, 'r', encoding='utf-8') as f:
         raw_data = json.load(f)
     util_model = UtilModel(model_path=clean_model_path, tokenizer=None, gpu_idx=3,
@@ -138,38 +136,38 @@ def main():
     ed = 0
     with open(data_save_path, 'w', encoding='utf-8') as f:
         for i, data in enumerate(raw_data):
-            print(f"当前问题：{i+1}/{len(raw_data)}")
+            print(f"Current issues：{i+1}/{len(raw_data)}")
             question = data['question']
             answer = data['answers']
             data_case['question'] = question
             data_case['answer'] = answer
             IDK_count = 0
             R_count = 0
-            print("筛选参考文档...")
+            print("Filter reference documents...")
             for i, references in enumerate(data['ctxs']):
                 reference = references["text"]
                 a, b = matching_model.predict(question, reference)
-                # print("问题:", question, "prob", b, "参考文档：", reference, "答案：", answer, sep='\n', end='\n')
+                # print("Question:", question, "prob", b, "Reference documents：", reference, "Answer：", answer, sep='\n', end='\n')
                 top_n.add(reference, b)
                 print(f"{i+1}/{len(data['ctxs'])}")
-            print("top N文档筛选完成")
+            print("Filtering of the top N documents is complete")
             data_case['contexts'] = top_n.get_top_n()
 
             model_answer = generator.generate(question=question, reference_list=data_case['contexts'])
             standard_answer = util_model.question_answer_combine(question=question, answer=answer)
 
             if "entailment" == nli_model.check_IDK(model_answer):
-                print("(我不知道)问题:", question, "模型回复：", model_answer,sep='\n', end='\n')
+                print("(I don’t know) Question:", question, "Model response:", model_answer,sep='\n', end='\n')
                 IDK_count += 1
                 continue
             if "entailment" == nli_model.predict_generator_answer(model_answer=model_answer, standard_answer=standard_answer):
-                print("(回答正确)问题:", question, "答案：", answer,"模型回复：", model_answer, "标准回复：", standard_answer, sep="\n", end="\n")
+                print("(Correct answer) Question:", question, "Answer：", answer,"Model response：", model_answer, "Standard reply：", standard_answer, sep="\n", end="\n")
                 R_count += 1
                 continue
-            print("问题:", question, "模型回复：", model_answer, "标准回复：", standard_answer, sep="\n", end="\n")
+            print("Question:", question, "Model response：", model_answer, "Standard reply：", standard_answer, sep="\n", end="\n")
             datas.append(data_case.copy())
             ed += 1
-            print("--------------------当前: ", f"IDK: {IDK_count}/{ed}", f"R_count: {R_count}/{ed}")
+            print("--------------------Currently: ", f"IDK: {IDK_count}/{ed}", f"R_count: {R_count}/{ed}")
         json.dump(datas, f, ensure_ascii=True, indent=4)
 if __name__ == '__main__':
     main()
