@@ -19,7 +19,8 @@ We have defined a number of custom classes, including custom dataset loading cla
 
 When you wish to train a text-matching model or any tool model from scratch, please refer to the implementation in ft_text_matching.py. Before doing so, ensure that the tRL and Transformers dependencies are properly configured. When loading the base model, you can adapt it to your task type by modifying the `num_labels` and `problem_type` parameters. Adjust the LORA configuration options as required. The base model path, custom dataset class and custom dataset path can all be modified within the code. 
 You can then use it directly. python ft_text_matching.py Run the code. You can also modify the code logic to suit your needs.
-ft_text_matching.py: Specify a base model and use LORA technology to perform efficient fine-tuning of text-matching models.
+
+ft_text_matching.py: Specify a base model and use LORA technology to perform efficient fine-tuning of text-matching models
 
 If you wish to reproduce the training of the generator model using the PPO algorithm and our method, please refer to `train_generator.py`. We have encapsulated all the hyperparameters, so you can simply modify them to suit your task.
 train_generator.py: Train the generative model
