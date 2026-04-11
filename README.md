@@ -1,5 +1,5 @@
-# RA
-code for paper [RA: Combating Hallucinations in RAG-Based LLMs by Reinforcing Attention on Critical Texts]
+# S\emph{EFING}
+code for paper [Combating Hallucinations in RAG-Based LLMs by Reinforcing Attention on Critical Texts]
 
 requires:  
   python>=3.10.0  
