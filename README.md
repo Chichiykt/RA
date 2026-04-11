@@ -1,4 +1,4 @@
-# S\emph{EFING}
+# SEFING
 code for paper [Combating Hallucinations in RAG-Based LLMs by Reinforcing Attention on Critical Texts]
 
 requires:  
